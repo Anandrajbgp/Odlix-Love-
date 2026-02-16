@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build Android App
 
 on:
   push:
@@ -11,13 +11,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Use Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          
-      - name: Upload Artifact
+          node-version: 18
+          cache: 'npm'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-cache: true
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Android App (APK)
+        run: npx eas-cli build --platform android --profile preview --local --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: hello-app
-          path: hello.js
+          name: android-app
+          path: ./*.apk
